@@ -2,22 +2,16 @@
 //  GameScene.swift
 //  Jump
 //
-//  Created by Bridget Janicki on 7/19/19.
 //  Copyright © 2019 Adam Janicki. All rights reserved.
 //
-
 import SpriteKit
 import GameplayKit
-import AVFoundation
-class GameScene: SKScene {
-    var audioPlayer1  = AVAudioPlayer()
-    var audioPlayer = AVAudioPlayer()
-    var audioPlayer2 = AVAudioPlayer()
-    var audioPlayer3 = AVAudioPlayer()
-    var audioPlayer4 = AVAudioPlayer()
-    var audioPlayer5 = AVAudioPlayer()
-    var audioPlayer6 = AVAudioPlayer()
+class GameScene: SKScene, SKPhysicsContactDelegate {
    var counter=0
+    var objects = [SKSpriteNode]()
+    var road1 = [SKSpriteNode]()
+    var road2 = [SKSpriteNode]()
+    var road3 = [SKSpriteNode]()
     var totalCoins = 0
     var Highscore = 0
     var sc = SKLabelNode()
@@ -30,7 +24,7 @@ class GameScene: SKScene {
     var b = SKSpriteNode()
     var move=false
     var gameover = false
-    var spot = -1
+    var spot = 0
     var score = 0
     var canmove=true
     var c = 0
@@ -72,67 +66,12 @@ class GameScene: SKScene {
     var w1: CGFloat = 0
     var h1: CGFloat = 0
     override func didMove(to view: SKView) {
+        physicsWorld.contactDelegate = self
         newHighscore = UILabel(frame: CGRect(x:0, y:280, width:750, height: 100))
          newHighscore.text = ""
         newHighscore.textColor = .orange
         newHighscore.font = UIFont.systemFont(ofSize: 56)
         view.addSubview(newHighscore)
-        let sound12 = Bundle.main.path(forResource: "carhit", ofType: ".mp3")
-        
-        do{
-            audioPlayer1 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound12!))
-        }
-        catch{
-            print(error)
-        }
-        let sound = Bundle.main.path(forResource: "BestPilot", ofType: ".mp3")
-        
-        do{
-            audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound!))
-        }
-        catch{
-            print(error)
-        }
-        let sound2 = Bundle.main.path(forResource: "NienLaugh", ofType: ".mp3")
-        
-        do{
-            audioPlayer2 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound2!))
-        }
-        catch{
-            print(error)
-        }
-        let sound4 = Bundle.main.path(forResource: "Jedi", ofType: ".mp3")
-        
-        do{
-            audioPlayer4 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound4!))
-        }
-        catch{
-            print(error)
-        }
-        let sound3 = Bundle.main.path(forResource: "deal", ofType: ".mp3")
-        
-        do{
-            audioPlayer3 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound3!))
-        }
-        catch{
-            print(error)
-        }
-        let sound5 = Bundle.main.path(forResource: "krennic", ofType: ".mp3")
-        
-        do{
-            audioPlayer5 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound5!))
-        }
-        catch{
-            print(error)
-        }
-        let sound6 = Bundle.main.path(forResource: "dengar", ofType: ".mp3")
-        
-        do{
-            audioPlayer6 = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound6!))
-        }
-        catch{
-            print(error)
-        }
         skinSelected = UserDefaults.standard.integer(forKey: "skinSelected")
         if(skinSelected > -1){
             skinSelected = UserDefaults.standard.integer(forKey: "skinSelected")
@@ -167,32 +106,44 @@ class GameScene: SKScene {
         }
         sc = self.childNode(withName: "sc") as! SKLabelNode
         frog = self.childNode(withName: "frog") as! SKSpriteNode
+        frog.name = "frog"
         lcar1 = self.childNode(withName: "lcar1") as! SKSpriteNode
         lcar2 = self.childNode(withName: "lcar2") as! SKSpriteNode
         lcar3 = self.childNode(withName: "lcar3") as! SKSpriteNode
         rcar1 = self.childNode(withName: "rcar1") as! SKSpriteNode
         rcar2 = self.childNode(withName: "rcar2") as! SKSpriteNode
         rcar3 = self.childNode(withName: "rcar3") as! SKSpriteNode
+        lcar3.name = "lcar3"
+        lcar2.name = "lcar2"
+        lcar1.name = "lcar1"
+        rcar1.name = "rcar1"
+        rcar2.name = "rcar2"
+        rcar3.name = "rcar3"
         strip1 = self.childNode(withName: "strip1") as! SKSpriteNode
         strip2 = self.childNode(withName: "strip2") as! SKSpriteNode
         strip3 = self.childNode(withName: "strip3") as! SKSpriteNode
         strip4 = self.childNode(withName: "strip4") as! SKSpriteNode
+        for i in 1..<9{
+            road1.append(self.childNode(withName: "q"+String(i)) as! SKSpriteNode)
+            road2.append(self.childNode(withName: "r"+String(i)) as! SKSpriteNode)
+            road3.append(self.childNode(withName: "w"+String(i)) as! SKSpriteNode)
+        }
         b = self.childNode(withName: "b") as! SKSpriteNode
         coin = SKSpriteNode(imageNamed: "coin48")
         coin.size = coin.texture!.size()
         coin.position = CGPoint(x:-600, y:0)
         tree1 = SKSpriteNode(imageNamed: "AutumnTree200")
         tree1.size = tree1.texture!.size()
-        tree1.position = CGPoint(x:-223, y:212)
+        tree1.position = CGPoint(x:-223, y:217)
         tree2 = SKSpriteNode(imageNamed: "AutumnTree200")
         tree2.size = tree1.texture!.size()
-        tree2.position = CGPoint(x:256, y:212)
+        tree2.position = CGPoint(x:256, y:217)
         tree3 = SKSpriteNode(imageNamed: "AutumnTree200")
         tree3.size = tree1.texture!.size()
-        tree3.position = CGPoint(x:-270, y:-190)
+        tree3.position = CGPoint(x:-270, y:-191)
         tree4 = SKSpriteNode(imageNamed: "AutumnTree200")
         tree4.size = tree1.texture!.size()
-        tree4.position = CGPoint(x:189, y:-190)
+        tree4.position = CGPoint(x:189, y:-191)
         headstart = UserDefaults.standard.integer(forKey: "headstart")
         if headstart > -1{
             headstart = UserDefaults.standard.integer(forKey: "headstart")
@@ -245,11 +196,9 @@ class GameScene: SKScene {
         else if skinSelected == 4 || skinSelected == 5{
             if skinSelected == 4{
                 frog.texture = SKTexture(imageNamed: "X-Wing")
-                audioPlayer4.play()
             }
             else{
                 frog.texture = SKTexture(imageNamed: "Falcon")
-                audioPlayer.play()
             }
             b.texture = SKTexture(imageNamed: "SpaceBackground")
             rcar1.texture = SKTexture(imageNamed: "TieFighter2")
@@ -323,7 +272,6 @@ class GameScene: SKScene {
             sc.fontColor = .orange
             highscorelabel.fontColor = .orange
             coin.zPosition = 3
-             audioPlayer5.play()
         }
         sc.text = "SC:\(score) C:\(coins)"
         if mapSelected == 2 && skinSelected != 4 && skinSelected != 5 && skinSelected != 6{
@@ -347,6 +295,20 @@ class GameScene: SKScene {
             strip3.color = UIColor(red: 1, green: 0.63671875, blue: 0.16796875, alpha: 1)
             strip4.color = UIColor(red: 1, green: 0.63671875, blue: 0.16796875, alpha: 1)
         }
+        objects.append(tree1)
+        objects.append(tree2)
+        objects.append(tree3)
+        objects.append(tree4)
+        objects.append(strip2)
+        objects.append(strip3)
+        objects.append(strip4)
+        objects.append(lcar1)
+        objects.append(lcar2)
+        objects.append(lcar3)
+        objects.append(rcar1)
+        objects.append(rcar2)
+        objects.append(rcar3)
+        
         addChild(tree1)
         addChild(tree2)
         addChild(tree3)
@@ -358,7 +320,6 @@ class GameScene: SKScene {
         h1 = lcar1.size.height/2
         spawnCoin()
         applySpeed()
-        moveFrog()
         startTimers()
     }
     func applySpeed(){
@@ -405,81 +366,52 @@ class GameScene: SKScene {
     }
     func moveFrog()
     {
-        if spot == -1{
-            spot=0;
-        }
-        else if spot == 0 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:-458), duration:time1)
+        let jump = CGFloat(136)
+        /*if spot == -1{
+            let moveFrog = SKAction.move(to: CGPoint(x:0,y:frog.position.y + jump), duration:time1)
             let sequence = SKAction.sequence([moveFrog])
             frog.run(sequence)
-            spot+=1
-            score+=1
-            sc.text = "SC:\(score) C:\(coins)"
-        }
-        else if spot == 1 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:-311), duration:time1)
+            spot=0
+        }*/
+        if spot < 8 && canmove == true{
+            let moveFrog = SKAction.move(to: CGPoint(x:0,y:frog.position.y + jump), duration:time1)
             let sequence = SKAction.sequence([moveFrog])
             frog.run(sequence)
-            spot+=1
-            score+=1
-            sc.text = "SC:\(score) C:\(coins)"
-        }
-        else if spot == 2 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:-180), duration:time1)
-            let sequence = SKAction.sequence([moveFrog])
-            frog.run(sequence)
-            spot+=1
-            score+=1
-          sc.text = "SC:\(score) C:\(coins)"
-        }
-        else if spot == 3 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:-62), duration:time1)
-            let sequence = SKAction.sequence([moveFrog])
-            frog.run(sequence)
-            spot+=1
-            score+=1
-           sc.text = "SC:\(score) C:\(coins)"
-        }
-        else if spot == 4 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:91), duration:time1)
-            let sequence = SKAction.sequence([moveFrog])
-            frog.run(sequence)
-            spot+=1
-            score+=1
-          sc.text = "SC:\(score) C:\(coins)"
-        }
-        else if spot == 5 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:208), duration:time1)
-            let sequence = SKAction.sequence([moveFrog])
-            frog.run(sequence)
-            spot+=1
-            score+=1
-           sc.text = "SC:\(score) C:\(coins)"
-        }
-        else if spot == 6 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:341), duration:time1)
-            let sequence = SKAction.sequence([moveFrog])
-            frog.run(sequence)
-            spot+=1
-            score+=1
-           sc.text = "SC:\(score) C:\(coins)"
-        }
-        else if spot == 7 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:487), duration:time1)
-            let sequence = SKAction.sequence([moveFrog])
-            frog.run(sequence)
+            /*for i in 0..<objects.count{
+                var currentY = objects[i].position.y
+                if currentY - jump < -599{
+                    let move = SKAction.move(to: CGPoint(x:objects[i].position.x,y: 489), duration:0.01)
+                    objects[i].run(move)
+                }
+                else{
+                    let move = SKAction.move(to: CGPoint(x:objects[i].position.x,y: currentY - jump), duration: time1)
+                    objects[i].run(move)
+                }
+            }*/
+            //moveStrips()
             spot+=1
             score+=1
             sc.text = "SC:\(score) C:\(coins)"
         }
         else if spot == 8 && canmove == true{
-            let moveFrog = SKAction.move(to: CGPoint(x:0,y:-575), duration:0.0)
+            let moveFrog = SKAction.move(to: CGPoint(x:0,y:-599), duration:0.0)
             let sequence = SKAction.sequence([moveFrog])
             frog.run(sequence)
             spot=0
             score+=1
            sc.text = "SC:\(score) C:\(coins)"
-        
+            /*for i in 0..<objects.count{
+                var currentY = objects[i].position.y
+                if currentY - jump < -599{
+                    let move = SKAction.move(to: CGPoint(x:objects[i].position.x,y: 489), duration:0.01)
+                    objects[i].run(move)
+                }
+                else{
+                    let move = SKAction.move(to: CGPoint(x:objects[i].position.x,y: currentY - jump), duration: time1)
+                    objects[i].run(move)
+                }
+            }*/
+            //moveStrips()
             lcar1.physicsBody?.applyImpulse(CGVector(dx: t1, dy: 0))
             rcar1.physicsBody?.applyImpulse(CGVector(dx: -1*t2, dy: 0))
             lcar2.physicsBody?.applyImpulse(CGVector(dx: t3, dy: 0))
@@ -496,6 +428,97 @@ class GameScene: SKScene {
             moveTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.80), target: self, selector: #selector(GameScene.stopMoveTimer), userInfo: nil, repeats: false)
             canmove=false
             spawnCoin()
+        }
+    }
+    @objc func switchImage(){
+        if coun % 2 == 0{
+            frog.texture = SKTexture(imageNamed: "explosion")
+        }
+        else{
+            if skinSelected == 4{
+                frog.texture = SKTexture(imageNamed: "X-Wing")
+            }
+            if skinSelected == 5{
+                frog.texture = SKTexture(imageNamed: "Falcon")
+            }
+            if skinSelected == 6{
+                frog.texture = SKTexture(imageNamed: "NewDeathStar")
+            }
+        }
+        coun+=1
+        if(coun == 2){
+            explosionTimer?.invalidate()
+            explosionTimer = nil
+        }
+    }
+    func moveStrips(){
+        for i in 0..<road1.count{
+            let jump = CGFloat(136)
+            var currentR1 = road1[i].position.y
+            var currentR2 = road2[i].position.y
+            var currentR3 = road3[i].position.y
+            if currentR1 - jump < -531{
+                //move up to top at y = 557
+                let move = SKAction.move(to: CGPoint(x:road1[i].position.x,y: 557), duration:0.01)
+                road1[i].run(move)
+            }
+            else{
+                let move = SKAction.move(to: CGPoint(x:road1[i].position.x,y: currentR1 - jump), duration:time1)
+                road1[i].run(move)
+            }
+            if currentR2 - jump < -531{
+                //move up to top at y = 557
+                let move = SKAction.move(to: CGPoint(x:road2[i].position.x,y: 557), duration:0.01)
+                road2[i].run(move)
+            }
+            else{
+                let move = SKAction.move(to: CGPoint(x:road2[i].position.x,y: currentR2 - jump), duration:time1)
+                road2[i].run(move)
+            }
+            if currentR3 - jump < -531{
+                //move up to top at y = 557
+                let move = SKAction.move(to: CGPoint(x:road3[i].position.x,y: 557), duration:0.01)
+                road3[i].run(move)
+            }
+            else{
+                let move = SKAction.move(to: CGPoint(x:road3[i].position.x,y: currentR3 - jump), duration:time1)
+                road3[i].run(move)
+            }
+
+        }
+    }
+    @objc func endGame()
+    {
+        speed2x=0
+        headstart=0
+        doubleCoins=0
+        UserDefaults.standard.set(speed2x, forKey: "speed2x")
+        UserDefaults.standard.set(headstart, forKey: "headstart")
+        UserDefaults.standard.set(doubleCoins, forKey: "doubleCoins")
+        if score > UserDefaults.standard.integer(forKey: "Highscore"){
+            UserDefaults.standard.set(score, forKey: "Highscore")
+        }
+        if totalCoins + coins > 1000
+        {
+            totalCoins = 999
+            UserDefaults.standard.set(totalCoins, forKey: "totalCoins")
+        }
+        else{
+            totalCoins += coins
+        }
+        UserDefaults.standard.set(totalCoins, forKey: "totalCoins")
+        let menuScene = SKScene(fileNamed: "GameMenu")!
+        menuScene.scaleMode = .aspectFill
+        view?.presentScene(menuScene, transition: SKTransition.doorsCloseHorizontal(withDuration: TimeInterval(1.2)))
+        newHighscore.text = ""
+    }
+    func didBegin(_ contact: SKPhysicsContact){
+        if contact.bodyA.node?.name == "frog" && gameover == false{
+            gameover = true
+            endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.8), target: self, selector: #selector(GameScene.endGame), userInfo: nil, repeats: false)
+            if skinSelected == 4 || skinSelected == 5 || skinSelected == 6{
+                endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.19), target: self, selector: #selector(GameScene.switchImage), userInfo: nil, repeats: true)
+            }
         }
     }
     override func update(_ currentTime: TimeInterval){
@@ -531,200 +554,7 @@ class GameScene: SKScene {
                 coin.position.y = -600
                 sc.text = "SC:\(score) C:\(coins)"
             }
-            
             countFrame=0
-            if frog.position.x + w > rcar1.position.x - w1 && frog.position.x - w < rcar1.position.x + w1 && gameover == false && frog.position.y + h > rcar1.position.y - h1 && frog.position.y - h < rcar1.position.y + h1
-            {
-                if Highscore < score{
-                    newHighscore.text = "New Highscore!"
-                }
-                canmove=false
-                gameover = true
-                endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.8), target: self, selector: #selector(GameScene.endGame), userInfo: nil, repeats: false)
-                if skinSelected == 4 || skinSelected == 5 || skinSelected == 6{
-                    endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.19), target: self, selector: #selector(GameScene.switchImage), userInfo: nil, repeats: true)
-                }
-                if skinSelected == 1 || skinSelected == 2 || skinSelected == 3{
-                    audioPlayer1.play()
-                }
-                else if skinSelected == 4{
-                    audioPlayer2.play()
-                }
-                else if skinSelected == 5{
-                    audioPlayer3.play()
-                }
-                else{
-                    audioPlayer6.play()
-                }
-            }
-            if frog.position.x + w > lcar1.position.x - w1 && frog.position.x - w < lcar1.position.x + w1 && gameover == false && frog.position.y + h > lcar1.position.y - h1 && frog.position.y - h < lcar1.position.y + h1
-            {
-                if Highscore < score{
-                    newHighscore.text = "New Highscore!"
-                }
-                canmove=false
-                gameover = true
-                endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.8), target: self, selector: #selector(GameScene.endGame), userInfo: nil, repeats: false)
-                if skinSelected == 4 || skinSelected == 5 || skinSelected == 6{
-                    endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.19), target: self, selector: #selector(GameScene.switchImage), userInfo: nil, repeats: true)
-                }
-                if skinSelected == 1 || skinSelected == 2 || skinSelected == 3{
-                    audioPlayer1.play()
-                }
-                else if skinSelected == 4{
-                    audioPlayer2.play()
-                }
-                else if skinSelected == 5{
-                    audioPlayer3.play()
-                }
-                else{
-                    audioPlayer6.play()
-                }
-            }
-            if frog.position.x + w > rcar2.position.x - w1 && frog.position.x - w < rcar2.position.x + w1 && gameover == false && frog.position.y + h > rcar2.position.y - h1 && frog.position.y - h < rcar2.position.y + h1
-            {
-                if Highscore < score{
-                    newHighscore.text = "New Highscore!"
-                }
-                canmove=false
-                gameover = true
-                endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.8), target: self, selector: #selector(GameScene.endGame), userInfo: nil, repeats: false)
-                if skinSelected == 4 || skinSelected == 5 || skinSelected == 6{
-                    endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.19), target: self, selector: #selector(GameScene.switchImage), userInfo: nil, repeats: true)
-                }
-                if skinSelected == 1 || skinSelected == 2 || skinSelected == 3{
-                    audioPlayer1.play()
-                }
-                else if skinSelected == 4{
-                    audioPlayer2.play()
-                }
-                else if skinSelected == 5{
-                    audioPlayer3.play()
-                }
-                else{
-                    audioPlayer6.play()
-                }
-            }
-            if frog.position.x + w > lcar2.position.x - w1 && frog.position.x - w < lcar2.position.x + w1 && gameover == false && frog.position.y + h > lcar2.position.y - h1 && frog.position.y - h < lcar2.position.y + h1
-            {
-                if Highscore < score{
-                    newHighscore.text = "New Highscore!"
-                }
-                canmove=false
-                gameover = true
-                endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.8), target: self, selector: #selector(GameScene.endGame), userInfo: nil, repeats: false)
-                if skinSelected == 4 || skinSelected == 5 || skinSelected == 6{
-                    endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.19), target: self, selector: #selector(GameScene.switchImage), userInfo: nil, repeats: true)
-                }
-                if skinSelected == 1 || skinSelected == 2 || skinSelected == 3{
-                    audioPlayer1.play()
-                }
-                else if skinSelected == 4{
-                    audioPlayer2.play()
-                }
-                else if skinSelected == 5{
-                    audioPlayer3.play()
-                }
-                else{
-                    audioPlayer6.play()
-                }
-            }
-            if frog.position.x + w > rcar3.position.x - w1 && frog.position.x - w < rcar3.position.x + w1 && gameover == false && frog.position.y + h > rcar3.position.y - h1 && frog.position.y - h < rcar3.position.y + h1
-            {
-                if Highscore < score{
-                    newHighscore.text = "New Highscore!"
-                }
-                canmove=false
-                gameover = true
-                endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.8), target: self, selector: #selector(GameScene.endGame), userInfo: nil, repeats: false)
-                if skinSelected == 4 || skinSelected == 5 || skinSelected == 6{
-                    endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.19), target: self, selector: #selector(GameScene.switchImage), userInfo: nil, repeats: true)
-                }
-                if skinSelected == 1 || skinSelected == 2 || skinSelected == 3{
-                    audioPlayer1.play()
-                }
-                else if skinSelected == 4{
-                    audioPlayer2.play()
-                }
-                else if skinSelected == 5{
-                    audioPlayer3.play()
-                }
-                else{
-                    audioPlayer6.play()
-                }
-            }
-            if frog.position.x + w > lcar3.position.x - w1 && frog.position.x - w < lcar3.position.x + w1 && gameover == false && frog.position.y + h > lcar3.position.y - h1 && frog.position.y - h < lcar3.position.y + h1
-            {
-                if Highscore < score{
-                    newHighscore.text = "New Highscore!"
-                }
-                canmove=false
-                gameover = true
-                endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.8), target: self, selector: #selector(GameScene.endGame), userInfo: nil, repeats: false)
-                if skinSelected == 4 || skinSelected == 5 || skinSelected == 6{
-                    endTimer = Timer.scheduledTimer(timeInterval: TimeInterval(0.19), target: self, selector: #selector(GameScene.switchImage), userInfo: nil, repeats: true)
-                }
-                if skinSelected == 1 || skinSelected == 2 || skinSelected == 3{
-                    audioPlayer1.play()
-                }
-                else if skinSelected == 4{
-                    audioPlayer2.play()
-                }
-                else if skinSelected == 5{
-                    audioPlayer3.play()
-                }
-                else{
-                    audioPlayer6.play()
-                }
-            }
         }
-    }
-   
-    @objc func switchImage(){
-        if coun % 2 == 0{
-            frog.texture = SKTexture(imageNamed: "explosion")
-        }
-        else{
-            if skinSelected == 4{
-                frog.texture = SKTexture(imageNamed: "X-Wing")
-            }
-            if skinSelected == 5{
-                frog.texture = SKTexture(imageNamed: "Falcon")
-            }
-            if skinSelected == 6{
-                frog.texture = SKTexture(imageNamed: "NewDeathStar")
-            }
-        }
-        coun+=1
-        if(coun == 2){
-            explosionTimer?.invalidate()
-            explosionTimer = nil
-        }
-    }
-    @objc func endGame()
-    {
-        speed2x=0
-        headstart=0
-        doubleCoins=0
-        UserDefaults.standard.set(speed2x, forKey: "speed2x")
-        UserDefaults.standard.set(headstart, forKey: "headstart")
-        UserDefaults.standard.set(doubleCoins, forKey: "doubleCoins")
-        if score > UserDefaults.standard.integer(forKey: "Highscore"){
-            UserDefaults.standard.set(score, forKey: "Highscore")
-        }
-        if totalCoins + coins > 1000
-        {
-            totalCoins = 999
-            UserDefaults.standard.set(totalCoins, forKey: "totalCoins")
-        }
-        else{
-            totalCoins += coins
-        }
-        UserDefaults.standard.set(totalCoins, forKey: "totalCoins")
-        let menuScene = SKScene(fileNamed: "GameMenu")!
-        menuScene.scaleMode = .aspectFill
-        view?.presentScene(menuScene, transition: SKTransition.doorsCloseHorizontal(withDuration: TimeInterval(1.2)))
-        newHighscore.text = ""
     }
 }
-
